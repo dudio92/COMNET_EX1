@@ -17,12 +17,14 @@ def start_game(hostname='127.0.0.1',port = 6444):
         while True:
             user_move = read_move()
             if user_move[0] == 0:
-                #Send close message to server
-                print("should qior")
+                send_move(user_move,clientSoc)
+                clientSoc.close()
             if user_move[0] == 1:
                 send_move(user_move,clientSoc)
-                print_move_response(clientSoc,unpacker)
+                resposne = print_move_response(clientSoc,unpacker)
                 get_print_heaps(unpacker,clientSoc)
+                read_server_msg(clientSoc)
+
 
 
 
@@ -45,31 +47,44 @@ def read_move():
     input_text = input()
     input_splitted = input_text.split()
     if input_splitted[0] == 'q' or input_splitted[0] == 'Q':
-        return 0, 0, 0
+        return 0, input_splitted[0], None
     if input_splitted[0] == 'A' or input_splitted[0] == 'B' or input_splitted[0] == 'C':
         return 1, input_splitted[0], input_splitted[1]
 
 def print_move_response(clientSoc,unpacker):
     response = int(clientSoc.recv(4).decode())
+    print("response",response)
     if response == 1:
         print("Move accepted")
+        return 1
     elif response == 0:
         print("Illegal move")
+        return 0
+    else:
+        print("no valid return code")
 
 def read_server_msg(clientSoc):
-    response = int(clientSoc.recv(4).decode())
+    recv = clientSoc.recv(4).decode()
+    print("recv",recv)
+    response = int(recv)
     print("response is",response)
-    if response == 1 :
-        print("Your turn")
-    elif response == 2:
+    if response == 4 :
+        print("Your turn:")
+    elif response == 5:
         print("You win!")
-    elif response == 3:
+    elif response == 6:
         print("Server win!")
 
 def send_move(user_move,clientSoc):
-    heap_name_bytes = bytes(user_move[1], 'utf-8')
-    move_struct = struct.pack(">1ci", heap_name_bytes, int(user_move[2]))
-    clientSoc.sendall(move_struct)
+    if user_move[0] == 1:
+        heap_name_bytes = bytes(user_move[1], 'utf-8')
+        move_struct = struct.pack(">1ci", heap_name_bytes, int(user_move[2]))
+        clientSoc.sendall(move_struct)
+    if user_move[0] == 0 : #User pressed Q
+        heap_name_bytes = bytes(user_move[1], 'utf-8')
+        move_struct = struct.pack(">1ci", heap_name_bytes,0)
+        clientSoc.sendall(move_struct)
+
 
 def get_print_heaps(unpacker,clientSoc):
     recv_bytes = clientSoc.recv(unpacker.size)
