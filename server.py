@@ -28,22 +28,22 @@ def start_game(n_a,n_b,n_c,port = 6444):
             if recv_move_unpacked[0].decode() == 'A':
                 if recv_move_unpacked[1] <= heaps_list[0]:
                     heaps_list[0] = heaps_list[0] - recv_move_unpacked[1]
-                    clientConnected.sendall(b'1')
+                    #clientConnected.sendall(b'1')
                     server_move(heaps_list,clientConnected)
                     send_updated_heaps(clientConnected, heaps_list,packer)
                 else:
                     clientConnected.sendall(b'0')
+
             elif recv_move_unpacked[0].decode() == 'B':
                 if recv_move_unpacked[1] <= heaps_list[1]:
                     heaps_list[1] = heaps_list[1] - recv_move_unpacked[1]
-                    clientConnected.sendall(b'1')
+                    #clientConnected.sendall(b'1')
                     server_move(heaps_list,clientConnected)
                     send_updated_heaps(clientConnected, heaps_list,packer)
                 else:
                     clientConnected.sendall(b'0')
             elif recv_move_unpacked[0].decode() == 'C':
                 if recv_move_unpacked[1] <= heaps_list[2]:
-                    clientConnected.sendall(b'1')
                     heaps_list[2] = heaps_list[2] - recv_move_unpacked[1]
                     server_move(heaps_list,clientConnected)
                     send_updated_heaps(clientConnected, heaps_list,packer)
@@ -83,10 +83,14 @@ def send_updated_heaps(clientConnected, heaps_list, packer):
 def process_user_move(recv_move_unpacked,heaps_list,clientConnected):
     if recv_move_unpacked[1] <= heaps_list[0]:
         heaps_list[0] = heaps_list[0] - recv_move_unpacked[1]
+        clientConnected.sendall(b'1')
         if heaps_list[0] == 0 and heaps_list[1] == 0 and heaps_list[2] == 0:
             clientConnected.sendall(b'2')
         else:
             server_move(heaps_list,clientConnected)
+    else:
+        clientConnected.sendall(b'0')
+
 
 
 
