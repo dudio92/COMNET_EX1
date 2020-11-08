@@ -19,21 +19,21 @@ def start_game(hostname='127.0.0.1',port = 6444):
             if user_move[0] == 0:
                 send_move(user_move,clientSoc)
                 clientSoc.close()
+                return 0
             if user_move[0] == 1:
                 send_move(user_move,clientSoc)
                 resposne = print_move_response(clientSoc,unpacker)
                 get_print_heaps(unpacker,clientSoc)
                 read_server_msg(clientSoc)
-
-
-
-
-
     except OSError as error:
         if error.errno == errno.ECONNREFUSED:
             print("connection refused by server")
         else:
             print(error.strerror)
+    finally:
+        clientSoc.close()
+
+
 
 
 
@@ -46,10 +46,12 @@ def print_status(rec_unpacked):
 def read_move():
     input_text = input()
     input_splitted = input_text.split()
-    if input_splitted[0] == 'q' or input_splitted[0] == 'Q':
-        return 0, input_splitted[0], None
-    if input_splitted[0] == 'A' or input_splitted[0] == 'B' or input_splitted[0] == 'C':
-        return 1, input_splitted[0], input_splitted[1]
+    if len(input_splitted) == 1 :
+        if input_splitted[0] == 'q' or input_splitted[0] == 'Q':
+            return 0, input_splitted[0], None
+    elif len(input_splitted) == 2:
+        if input_splitted[0] == 'A' or input_splitted[0] == 'B' or input_splitted[0] == 'C':
+            return 1, input_splitted[0], input_splitted[1]
 
 def print_move_response(clientSoc,unpacker):
     response = int(clientSoc.recv(4).decode())
