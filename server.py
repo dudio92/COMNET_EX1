@@ -71,6 +71,13 @@ def start_game(n_a,n_b,n_c,port = 6444):
                 elif recv_move_unpacked[0].decode() == 'Q':
                     print("Quit")
                     clientConnected.close()
+
+                elif recv_move_unpacked[0].decode() == 'X':
+                    clientConnected.sendall(b'0')
+                    x = server_move(heaps_list)
+                    send_updated_heaps(clientConnected, heaps_list, packer)
+                    send_server_message(clientConnected, heaps_list, x)
+
         except OSError as error:
             if error.errno == errno.ECONNREFUSED:
                 print("connection refused by server")

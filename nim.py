@@ -20,7 +20,12 @@ def start_game(hostname='127.0.0.1',port = 6444):
                 send_move(user_move,clientSoc)
                 clientSoc.close()
                 return 0
-            if user_move[0] == 1:
+            elif user_move[0] == 1:
+                send_move(user_move,clientSoc)
+                resposne = print_move_response(clientSoc,unpacker)
+                get_print_heaps(unpacker,clientSoc)
+                read_server_msg(clientSoc)
+            else:
                 send_move(user_move,clientSoc)
                 resposne = print_move_response(clientSoc,unpacker)
                 get_print_heaps(unpacker,clientSoc)
@@ -49,9 +54,15 @@ def read_move():
     if len(input_splitted) == 1 :
         if input_splitted[0] == 'q' or input_splitted[0] == 'Q':
             return 0, input_splitted[0], None
+        else:
+            return 'X', 0, 0
     elif len(input_splitted) == 2:
         if input_splitted[0] == 'A' or input_splitted[0] == 'B' or input_splitted[0] == 'C':
             return 1, input_splitted[0], input_splitted[1]
+        else:
+            return 'X', 0, 0
+    else:
+            return 'X',0,0
 
 def print_move_response(clientSoc,unpacker):
     response = int(clientSoc.recv(4).decode())
@@ -82,10 +93,15 @@ def send_move(user_move,clientSoc):
         heap_name_bytes = bytes(user_move[1], 'utf-8')
         move_struct = struct.pack(">1ci", heap_name_bytes, int(user_move[2]))
         clientSoc.sendall(move_struct)
-    if user_move[0] == 0 : #User pressed Q
+    elif user_move[0] == 0 : #User pressed Q
         heap_name_bytes = bytes(user_move[1], 'utf-8')
         move_struct = struct.pack(">1ci", heap_name_bytes,0)
         clientSoc.sendall(move_struct)
+    else: #Any illegal move
+        heap_name_bytes = bytes('X', 'utf-8')
+        move_struct = struct.pack(">1ci", heap_name_bytes,0)
+        clientSoc.sendall(move_struct)
+
 
 
 def get_print_heaps(unpacker,clientSoc):
